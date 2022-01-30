@@ -36,20 +36,6 @@ class SpyDelegate: Web3SocketDelegate {
         }
     }
     
-    func received(message: Any) {
-        somethingWithDelegateResult = message
-        guard let expectation = asyncExpectation else {
-            XCTFail("SpyDelegate was not setup correctly. Missing XCTExpectation reference")
-            return
-        }
-        print(message)
-        if !fulfilled {
-            print("fullfilled")
-            fulfilled = true
-            expectation.fulfill()
-        }
-    }
-    
     func gotError(error: Error) {
         XCTFail(error.localizedDescription)
     }
@@ -83,16 +69,21 @@ class web3swift_websocket_Tests: XCTestCase {
         }
     }
     
-    func testSubscribeOnPendingTXs() {
+    func testSubscribeOnNewHeads() throws {
+        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
+        let eventExpectation = expectation(description: "eventExpectation")
         guard let socketProvider = InfuraWebsocketProvider.connectToInfuraSocket(.Mainnet, delegate: spyDelegate) else {
             return XCTFail()
         }
-        self.socketProvider = socketProvider
-        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
-        try! self.socketProvider!.subscribeOnNewPendingTransactions()
-//        DispatchQueue.main.asyncAfter(deadline: .now()+5) { [unowned self] in
-//            try! self.socketProvider!.subscribeOnNewPendingTransactions()
-//        }
+        let eth = web3(provider: socketProvider).eth
+        var eventExpectationFulfilled = false
+        let subscription = try eth.subscribeOnNewHeads { result in
+            _ = try! result.get()
+            if !eventExpectationFulfilled {
+                eventExpectation.fulfill()
+                eventExpectationFulfilled = true
+            }
+        }
         waitForExpectations(timeout: 1000) { error in
             if let error = error {
                 XCTFail("waitForExpectationsWithTimeout errored: \(error)")
@@ -105,18 +96,24 @@ class web3swift_websocket_Tests: XCTestCase {
             
             XCTAssert(true)
         }
+        subscription.unsubscribe()
     }
     
-    func testSubscribeOnLogs() {
+    func testSubscribeOnLogs() throws {
+        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
+        let eventExpectation = expectation(description: "eventExpectation")
         guard let socketProvider = InfuraWebsocketProvider.connectToInfuraSocket(.Mainnet, delegate: spyDelegate) else {
             return XCTFail()
         }
-        self.socketProvider = socketProvider
-        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
-        try! self.socketProvider!.subscribeOnLogs(addresses: [EthereumAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")!], topics: nil)
-        //        DispatchQueue.main.asyncAfter(deadline: .now()+5) { [unowned self] in
-        //            try! self.socketProvider!.subscribeOnNewPendingTransactions()
-        //        }
+        let eth = web3(provider: socketProvider).eth
+        var eventExpectationFulfilled = false
+        let subscription = try eth.subscribeOnLogs { result in
+            _ = try! result.get()
+            if !eventExpectationFulfilled {
+                eventExpectation.fulfill()
+                eventExpectationFulfilled = true
+            }
+        }
         waitForExpectations(timeout: 1000) { error in
             if let error = error {
                 XCTFail("waitForExpectationsWithTimeout errored: \(error)")
@@ -129,18 +126,24 @@ class web3swift_websocket_Tests: XCTestCase {
             
             XCTAssert(true)
         }
+        subscription.unsubscribe()
     }
     
-    func testSubscribeOnNewHeads() {
+    func testSubscribeOnNewPendingTransactions() throws {
+        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
+        let eventExpectation = expectation(description: "eventExpectation")
         guard let socketProvider = InfuraWebsocketProvider.connectToInfuraSocket(.Mainnet, delegate: spyDelegate) else {
             return XCTFail()
         }
-        self.socketProvider = socketProvider
-        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
-        try! self.socketProvider!.subscribeOnNewHeads()
-        //        DispatchQueue.main.asyncAfter(deadline: .now()+5) { [unowned self] in
-        //            try! self.socketProvider!.subscribeOnNewPendingTransactions()
-        //        }
+        let eth = web3(provider: socketProvider).eth
+        var eventExpectationFulfilled = false
+        let subscription = try eth.subscribeOnNewPendingTransactions { result in
+            _ = try! result.get()
+            if !eventExpectationFulfilled {
+                eventExpectation.fulfill()
+                eventExpectationFulfilled = true
+            }
+        }
         waitForExpectations(timeout: 1000) { error in
             if let error = error {
                 XCTFail("waitForExpectationsWithTimeout errored: \(error)")
@@ -153,18 +156,18 @@ class web3swift_websocket_Tests: XCTestCase {
             
             XCTAssert(true)
         }
+        subscription.unsubscribe()
     }
     
-    func testFilter() {
+    func testSubscribeOnSyncing() throws {
+        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
         guard let socketProvider = InfuraWebsocketProvider.connectToInfuraSocket(.Mainnet, delegate: spyDelegate) else {
             return XCTFail()
         }
-        self.socketProvider = socketProvider
-        spyDelegate.asyncExpectation = expectation(description: "Delegate called")
-        try! self.socketProvider?.setFilterAndGetLogs(method: .newFilter, address: EthereumAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")!, fromBlock: .earliest, toBlock: .latest, topics: nil)
-        //        DispatchQueue.main.asyncAfter(deadline: .now()+5) { [unowned self] in
-        //            try! self.socketProvider!.subscribeOnNewPendingTransactions()
-        //        }
+        let eth = web3(provider: socketProvider).eth
+        let subscription = try eth.subscribeOnSyncing { result in
+            _ = try! result.get()
+        }
         waitForExpectations(timeout: 1000) { error in
             if let error = error {
                 XCTFail("waitForExpectationsWithTimeout errored: \(error)")
@@ -177,5 +180,6 @@ class web3swift_websocket_Tests: XCTestCase {
             
             XCTAssert(true)
         }
+        subscription.unsubscribe()
     }
 }
