@@ -11,7 +11,7 @@ import PromiseKit
 import Starscream
 
 public struct SubscribeOnLogsParams: Encodable {
-    public let address: [String]?
+    public let address: String?
     public let topics: [String]?
 }
 
@@ -28,10 +28,10 @@ extension web3.Eth {
         try _subscribe(filter: .newHeads, listener: listener)
     }
     
-    public func subscribeOnLogs(addresses: [EthereumAddress]? = nil,
+    public func subscribeOnLogs(address: EthereumAddress? = nil,
                                 topics: [String]? = nil,
                                 listener: @escaping Web3SubscriptionListener<LogItem>) throws -> Subscription {
-        let params = SubscribeOnLogsParams(address: addresses?.map { $0.address }, topics: topics)
+        let params = SubscribeOnLogsParams(address: address?.address, topics: topics)
         return try _subscribe(filter: .logs(params: params), listener: listener)
     }
     
