@@ -31,7 +31,7 @@ extension web3.Eth {
     public func subscribeOnLogs(address: EthereumAddress? = nil,
                                 topics: [String]? = nil,
                                 listener: @escaping Web3SubscriptionListener<LogItem>) throws -> Subscription {
-        let params = SubscribeOnLogsParams(address: address?.address, topics: topics)
+        let params = SubscribeOnLogsParams(address: address?.address.lowercased(), topics: topics)
         return try _subscribe(filter: .logs(params: params), listener: listener)
     }
     
