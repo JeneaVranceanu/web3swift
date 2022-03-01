@@ -32,9 +32,9 @@
         "package": "Starscream",
         "repositoryURL": "https://github.com/daltoniam/Starscream.git",
         "state": {
-          "branch": null,
-          "revision": "df8d82047f6654d8e4b655d1b1525c64e1059d21",
-          "version": "4.0.4"
+          "branch": "master",
+          "revision": "ed96ef4949c9d3e793c5b1adf8d287191e99a97e",
+          "version": null
         }
       }
     ]
