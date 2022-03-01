@@ -216,7 +216,7 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
         return socketProvider
     }
     
-    public func didReceive(event: WebSocketEvent, client: WebSocket) {
+    public func didReceive(event: WebSocketEvent, client: WebSocketClient) {
         switch event {
         case .connected(let headers):
             debugMode ? print("websocket is connected, headers:\n \(headers)") : nil
@@ -254,6 +254,9 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             debugMode ? print("error: \(String(describing: error))") : nil
             websocketConnected = false
             delegate.gotError(error: error!)
+        case .peerClosed:
+            debugMode ? print("peerClosed") : nil
+            delegate.gotError(error: Web3Error.connectionError)
         }
     }
     
