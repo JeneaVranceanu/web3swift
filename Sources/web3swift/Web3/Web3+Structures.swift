@@ -689,3 +689,47 @@ public struct TxPoolContentForNonce {
     public var nonce: BigUInt
     public var details: [TransactionDetails]
 }
+
+public enum FilterChanges: Decodable {
+    case hashes([String])
+    case logs([EventLog])
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let hashes = try? container.decode([String].self) {
+            self = .hashes(hashes)
+        } else {
+            self = .logs(try container.decode([EventLog].self))
+        }
+    }
+}
+
+public struct BlockHeader: Decodable {
+    public let difficulty: String
+    public let extraData: String
+    public let gasLimit: String
+    public let gasUsed: String
+    public let logsBloom: String
+    public let miner: String
+    public let nonce: String
+    public let number: String
+    public let parentHash: String
+    public let receiptsRoot: String
+    public let sha3Uncles: String
+    public let stateRoot: String
+    public let timestamp: String
+    public let transactionsRoot: String
+}
+
+public struct SyncingInfo: Decodable {
+    public struct Status: Decodable {
+        public let startingBlock: Int
+        public let currentBlock: Int
+        public let highestBlock: Int
+        public let pulledStates: Int
+        public let knownStates: Int
+    }
+    
+    public let syncing: Bool
+    public let status: Status?
+}
