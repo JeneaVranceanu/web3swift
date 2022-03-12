@@ -168,7 +168,7 @@ extension ABIDecoder {
                 let (v, c) = decodeSignleType(type: subTypes[i], data: elementItself, pointer: consumed)
                 guard let valueUnwrapped = v, let consumedUnwrapped = c else {return (nil, nil)}
                 toReturn.append(valueUnwrapped)
-                consumed = consumed + consu medUnwrapped
+                consumed = consumed + consumedUnwrapped
             }
             //            print("Tuple element is: \n" + String(describing: toReturn))
             if type.isStatic {
