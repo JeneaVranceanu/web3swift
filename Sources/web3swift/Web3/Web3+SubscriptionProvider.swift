@@ -27,6 +27,7 @@ extension SubscribeEventFilter {
 
 public protocol Subscription {
     func unsubscribe()
+    func resubscribe()
 }
 
 public typealias Web3SubscriptionListener<R: Decodable> = (Result<R, Error>) -> Void

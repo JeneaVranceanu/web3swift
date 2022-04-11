@@ -28,13 +28,20 @@ public struct DefaultWeb3SocketDelegate: Web3SocketDelegate {
 public class WebsocketSubscription: Subscription {
     public var id: String? = nil
     private let unsubscribeCallback: (WebsocketSubscription) -> Void
+    private let resubscribeCallback: (WebsocketSubscription) -> Void
     
-    public init(unsubscribeCallback: @escaping (WebsocketSubscription) -> Void) {
+    public init(unsubscribeCallback: @escaping (WebsocketSubscription) -> Void,
+                resubscribeCallback: @escaping (WebsocketSubscription) -> Void) {
         self.unsubscribeCallback = unsubscribeCallback
+        self.resubscribeCallback = resubscribeCallback
     }
-    
+
     public func unsubscribe() {
         unsubscribeCallback(self)
+    }
+
+    public func resubscribe() {
+        resubscribeCallback(self)
     }
 }
 
@@ -107,6 +114,11 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
     private var requests = [UInt64: (Swift.Result<JSONRPCresponse, Error>) -> Void]()
     private var pendingRequests = [() -> Void]()
     private var internalQueue: DispatchQueue
+
+    /// If web socket receives `.peerClosed` event a reconnection attempt will be performed.
+    /// This flag will allow to differentiate connection and reconnection events.
+    /// In case of reconnection event all subscriptions must be re-initialized.
+    private var isReconnectingOnPeerClosed = false
     
     public init?(_ endpoint: URL,
                  delegate wsdelegate: Web3SocketDelegate? = nil,
@@ -134,6 +146,7 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
                              queue: DispatchQueue,
                              listener: @escaping Web3SubscriptionListener<R>) -> Subscription {
         internalQueue.sync {
+            let subscribeRequest = JSONRPCRequestFabric.prepareRequest(JSONRPCmethod.subscribe, parameters: filter.params)
             let subscription = WebsocketSubscription(unsubscribeCallback: { subscription in
                 guard let id = subscription.id else {
                     return
@@ -155,28 +168,56 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
                         self.delegate.gotError(error: error)
                     }
                 }
-            })
-            let request = JSONRPCRequestFabric.prepareRequest(JSONRPCmethod.subscribe, parameters: filter.params)
-            sendAsync(request, queue: queue).pipe { result in
-                switch result {
-                case .fulfilled(let response):
-                    guard let subscriptionID: String = response.getValue() else {
-                        self.delegate.gotError(error: Web3Error.processingError(desc: "Wrong result in response: \(response)"))
-                        return
-                    }
-                    subscription.id = subscriptionID
-                    self.subscriptions[subscriptionID] = (subscription, { result in
-                        listener(result.flatMap { eventData in
-                            Swift.Result {
-                                try JSONDecoder().decode(JSONRPCSubscriptionEvent<R>.self, from: eventData)
-                            }
-                        }.map { $0.params.result })
-                    })
-                case .rejected(let error):
-                    listener(.failure(error))
+            }) { subscription in
+                guard subscription.id != nil else {
+                    return
                 }
+
+                // If reconnecting on peer closed then we are reusing old subcription request with the same ID
+                let newSubscriptionRequest = self.isReconnectingOnPeerClosed
+                ? subscribeRequest
+                : JSONRPCRequestFabric.prepareRequest(JSONRPCmethod.subscribe, parameters: filter.params)
+
+                self.subscribe(request: newSubscriptionRequest,
+                               queue: queue,
+                               subscription: subscription,
+                               replacementSubscriptionID: subscription.id,
+                               listener: listener)
             }
+            subscribe(request: subscribeRequest,
+                      queue: queue,
+                      subscription: subscription,
+                      listener: listener)
             return subscription
+        }
+    }
+
+    private func subscribe<R>(request: JSONRPCrequest,
+                              queue: DispatchQueue,
+                              subscription: WebsocketSubscription,
+                              replacementSubscriptionID: String? = nil,
+                              listener: @escaping Web3SubscriptionListener<R>) {
+        sendAsync(request, queue: queue).pipe { result in
+            switch result {
+            case .fulfilled(let response):
+                guard let subscriptionID: String = response.getValue() else {
+                    self.delegate.gotError(error: Web3Error.processingError(desc: "Wrong result in response: \(response)"))
+                    return
+                }
+                subscription.id = subscriptionID
+                if let replacementSubscriptionID = replacementSubscriptionID {
+                    self.subscriptions.removeValue(forKey: replacementSubscriptionID)
+                }
+                self.subscriptions[subscriptionID] = (subscription, { result in
+                    listener(result.flatMap { eventData in
+                        Swift.Result {
+                            try JSONDecoder().decode(JSONRPCSubscriptionEvent<R>.self, from: eventData)
+                        }
+                    }.map { $0.params.result })
+                })
+            case .rejected(let error):
+                listener(.failure(error))
+            }
         }
     }
     
@@ -186,6 +227,17 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
     
     public func disconnectSocket() {
         socket.disconnect()
+    }
+
+    private func reconnectOnPeerClosed() {
+        isReconnectingOnPeerClosed = true
+        socket.disconnect()
+    }
+
+    private func reviveCachedSubscriptions() {
+        subscriptions.values.forEach { (subsription, _) in
+            subsription.resubscribe()
+        }
     }
     
     public func isConnect() -> Bool {
@@ -223,6 +275,11 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             websocketConnected = true
             connected()
             delegate.socketConnected(headers)
+
+            if isReconnectingOnPeerClosed {
+                reviveCachedSubscriptions()
+                isReconnectingOnPeerClosed = false
+            }
         case .disconnected(let reason, let code):
             debugMode ? print("websocket is disconnected: \(reason) with code: \(code)") : nil
             websocketConnected = false
@@ -250,6 +307,10 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             debugMode ? print("cancelled") : nil
             websocketConnected = false
             delegate.gotError(error: Web3Error.nodeError(desc: "socket cancelled"))
+
+            if isReconnectingOnPeerClosed {
+                socket.connect()
+            }
         case .error(let error):
             debugMode ? print("error: \(String(describing: error))") : nil
             websocketConnected = false
@@ -257,6 +318,7 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
         case .peerClosed:
             debugMode ? print("peerClosed") : nil
             delegate.gotError(error: Web3Error.connectionError)
+            reconnectOnPeerClosed()
         }
     }
     
