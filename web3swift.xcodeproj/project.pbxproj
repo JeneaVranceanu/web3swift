@@ -204,8 +204,9 @@
 		604FA4FF27ECBDC80021108F /* DataConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604FA4FE27ECBDC80021108F /* DataConversionTests.swift */; };
 		60C1786E2809BA0C0083F064 /* EthereumMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C1786D2809BA0C0083F064 /* EthereumMetadata.swift */; };
 		CB50A52827060BD600D7E39B /* EIP712Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB50A52727060BD600D7E39B /* EIP712Tests.swift */; };
-		D606A56B279F5D59003643ED /* DecodeSolidityErrorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D606A56A279F5D59003643ED /* DecodeSolidityErrorType.swift */; };
 		D6A3D9B827F1E785009E3BCF /* ABIEncoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A3D9B727F1E785009E3BCF /* ABIEncoderTest.swift */; };
+		D6C44D6428786106005CEDAB /* DecodeSolidityErrorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C44D6328786106005CEDAB /* DecodeSolidityErrorType.swift */; };
+		D6D039F227A6EE93008B4E99 /* Web3+SubscriptionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D039F127A6EE93008B4E99 /* Web3+SubscriptionProvider.swift */; };
 		D6EC73AE2876E4670079DBDF /* EthereumContractTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6EC73AD2876E4670079DBDF /* EthereumContractTest.swift */; };
 		E22A911F241ED71A00EC1021 /* browser.min.js in Resources */ = {isa = PBXBuildFile; fileRef = E22A911E241ED71A00EC1021 /* browser.min.js */; };
 		E2B76710241ED479007EBFE3 /* browser.js in Resources */ = {isa = PBXBuildFile; fileRef = E2B7670F241ED479007EBFE3 /* browser.js */; };
@@ -437,8 +438,9 @@
 		60C1786D2809BA0C0083F064 /* EthereumMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumMetadata.swift; sourceTree = "<group>"; };
 		CB50A52727060BD600D7E39B /* EIP712Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP712Tests.swift; sourceTree = "<group>"; };
 		CB50A52927060C5300D7E39B /* EIP712.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP712.swift; sourceTree = "<group>"; };
-		D606A56A279F5D59003643ED /* DecodeSolidityErrorType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodeSolidityErrorType.swift; sourceTree = "<group>"; };
 		D6A3D9B727F1E785009E3BCF /* ABIEncoderTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ABIEncoderTest.swift; sourceTree = "<group>"; };
+		D6C44D6328786106005CEDAB /* DecodeSolidityErrorType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodeSolidityErrorType.swift; sourceTree = "<group>"; };
+		D6D039F127A6EE93008B4E99 /* Web3+SubscriptionProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Web3+SubscriptionProvider.swift"; sourceTree = "<group>"; };
 		D6EC73AD2876E4670079DBDF /* EthereumContractTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumContractTest.swift; sourceTree = "<group>"; };
 		E22A911E241ED71A00EC1021 /* browser.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = browser.min.js; sourceTree = "<group>"; };
 		E2B7670F241ED479007EBFE3 /* browser.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = browser.js; sourceTree = "<group>"; };
@@ -761,6 +763,7 @@
 		3AA8154D2276E44100F5DB52 /* Web3 */ = {
 			isa = PBXGroup;
 			children = (
+				D6D039F127A6EE93008B4E99 /* Web3+SubscriptionProvider.swift */,
 				6049F4172806171300DFE624 /* Web3+Signing.swift */,
 				5C26D89D27F3724600431EB0 /* Web3+EIP1559.swift */,
 				5C26D8A127F5AC0300431EB0 /* Web3+GasOracle.swift */,
@@ -1024,7 +1027,6 @@
 		E252E68126B542D000717C16 /* localTests */ = {
 			isa = PBXGroup;
 			children = (
-				5CDEF973275A74670004A2F2 /* LocalTests.xctestplan */,
 				6029BE712817A4A8006FA0DF /* LocalTestCase.swift */,
 				5C26D89F27F3725500431EB0 /* EIP1559BlockTests.swift */,
 				5CF7E8A1276B79290009900F /* EIP67Tests.swift */,
@@ -1035,6 +1037,7 @@
 				604FA4FE27ECBDC80021108F /* DataConversionTests.swift */,
 				5CF7E8A0276B79290009900F /* AdvancedABIv2Tests.swift */,
 				D6A3D9B727F1E785009E3BCF /* ABIEncoderTest.swift */,
+				D6C44D6328786106005CEDAB /* DecodeSolidityErrorType.swift */,
 				5CF7E89C276B79280009900F /* BasicLocalNodeTests.swift */,
 				5CF7E89F276B79280009900F /* EventloopTests.swift */,
 				5CF7E895276B79270009900F /* TestHelpers.swift */,
@@ -1046,8 +1049,8 @@
 				5CF7E89A276B79280009900F /* UncategorizedTests.swift */,
 				5CF7E893276B79270009900F /* TransactionsTests.swift */,
 				5CF7E89E276B79280009900F /* UserCases.swift */,
-				D606A56A279F5D59003643ED /* DecodeSolidityErrorType.swift */,
 				D6EC73AD2876E4670079DBDF /* EthereumContractTest.swift */,
+				5CDEF973275A74670004A2F2 /* LocalTests.xctestplan */,
 			);
 			path = localTests;
 			sourceTree = "<group>";
@@ -1387,6 +1390,7 @@
 				3AA8160E2276E44100F5DB52 /* Web3+ERC1155.swift in Sources */,
 				3AA815F42276E44100F5DB52 /* Promise+Web3+Eth+EstimateGas.swift in Sources */,
 				3AA815C52276E44100F5DB52 /* ABIParameterTypes.swift in Sources */,
+				D6D039F227A6EE93008B4E99 /* Web3+SubscriptionProvider.swift in Sources */,
 				3AA815C22276E44100F5DB52 /* ABIDecoding.swift in Sources */,
 				3AA815EC2276E44100F5DB52 /* Promise+Web3+Eth+GetGasPrice.swift in Sources */,
 				3AA815AA2276E44100F5DB52 /* ENSBaseRegistrar.swift in Sources */,
@@ -1430,7 +1434,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB50A52827060BD600D7E39B /* EIP712Tests.swift in Sources */,
-				D606A56B279F5D59003643ED /* DecodeSolidityErrorType.swift in Sources */,
 				5CC0333828023387006AD710 /* RemoteParsingTests.swift in Sources */,
 				5CF7E8AB276B792A0009900F /* UncategorizedTests.swift in Sources */,
 				5CF7E8A4276B792A0009900F /* TransactionsTests.swift in Sources */,
@@ -1447,6 +1450,7 @@
 				5CC0333928023387006AD710 /* ENSTests.swift in Sources */,
 				5CF7E8A9276B792A0009900F /* ERC20ClassTests.swift in Sources */,
 				5CF7E8A8276B792A0009900F /* ERC20Tests.swift in Sources */,
+				D6C44D6428786106005CEDAB /* DecodeSolidityErrorType.swift in Sources */,
 				5CF7E8B2276B792A0009900F /* EIP67Tests.swift in Sources */,
 				5CF7E8AE276B792A0009900F /* PromisesTests.swift in Sources */,
 				5CF7E8A2276B79290009900F /* EIP681Tests.swift in Sources */,

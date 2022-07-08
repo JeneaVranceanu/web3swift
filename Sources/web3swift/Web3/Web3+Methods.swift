@@ -17,6 +17,11 @@ public enum JSONRPCmethod: String, Encodable {
     case getTxPoolContent = "txpool_content"
     case getTxPoolInspect = "txpool_inspect"
     case estimateGas = "eth_estimateGas"
+    case newPendingTransactionFilter = "eth_newPendingTransactionFilter"
+    case newFilter = "eth_newFilter"
+    case newBlockFilter = "eth_newBlockFilter"
+    case getFilterLogs = "eth_getFilterLogs"
+    case subscribe = "eth_subscribe"
 
     // 1 parameter in call
     case sendRawTransaction = "eth_sendRawTransaction"
@@ -27,6 +32,9 @@ public enum JSONRPCmethod: String, Encodable {
     case unlockAccount = "personal_unlockAccount"
     case createAccount = "personal_createAccount"
     case getLogs = "eth_getLogs"
+    case getFilterChanges = "eth_getFilterChanges"
+    case uninstallFilter = "eth_uninstallFilter"
+    case unsubscribe = "eth_unsubscribe"
 
     // 2 parameters in call
     case call = "eth_call"
@@ -39,37 +47,47 @@ public enum JSONRPCmethod: String, Encodable {
 
     // 3 parameters in call
     case feeHistory = "eth_feeHistory"
-
-    public var requiredNumOfParameters: Int {
-        switch self {
-        case .gasPrice,
-                .blockNumber,
-                .getNetwork,
-                .getAccounts,
-                .getTxPoolStatus,
-                .getTxPoolContent,
-                .getTxPoolInspect:
-            return 0
-        case .sendRawTransaction,
-                .sendTransaction,
-                .getTransactionByHash,
-                .getTransactionReceipt,
-                .personalSign,
-                .unlockAccount,
-                .createAccount,
-                .getLogs,
-                .estimateGas:
-            return 1
-        case .call,
-                .getTransactionCount,
-                .getBalance,
-                .getStorageAt,
-                .getCode,
-                .getBlockByHash,
-                .getBlockByNumber:
-            return 2
-        case .feeHistory:
-            return 3
+    
+    public var requiredNumOfParameters: Int? {
+        get {
+            switch self {
+            case .gasPrice,
+                    .blockNumber,
+                    .getNetwork,
+                    .getAccounts,
+                    .getTxPoolStatus,
+                    .getTxPoolContent,
+                    .getTxPoolInspect,
+                    .newPendingTransactionFilter,
+                    .newFilter,
+                    .newBlockFilter,
+                    .getFilterLogs,
+                    .subscribe:
+                return 0
+            case .sendRawTransaction,
+                    .sendTransaction,
+                    .getTransactionByHash,
+                    .getTransactionReceipt,
+                    .personalSign,
+                    .unlockAccount,
+                    .createAccount,
+                    .getLogs,
+                    .estimateGas,
+                    .getFilterChanges,
+                    .uninstallFilter,
+                    .unsubscribe:
+                return 1
+            case .call,
+                    .getTransactionCount,
+                    .getBalance,
+                    .getStorageAt,
+                    .getCode,
+                    .getBlockByHash,
+                    .getBlockByNumber:
+                return 2
+            case .feeHistory:
+                return 3
+            }
         }
     }
 }
@@ -77,14 +95,6 @@ public enum JSONRPCmethod: String, Encodable {
 public struct JSONRPCRequestFabric {
     public static func prepareRequest(_ method: JSONRPCmethod, parameters: [Encodable]) -> JSONRPCrequest {
         var request = JSONRPCrequest()
-        request.method = method
-        let pars = JSONRPCparams(params: parameters)
-        request.params = pars
-        return request
-    }
-
-    public static func prepareRequest(_ method: InfuraWebsocketMethod, parameters: [Encodable]) -> InfuraWebsocketRequest {
-        var request = InfuraWebsocketRequest()
         request.method = method
         let pars = JSONRPCparams(params: parameters)
         request.params = pars

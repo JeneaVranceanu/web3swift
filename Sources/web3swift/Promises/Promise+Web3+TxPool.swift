@@ -28,8 +28,8 @@ extension web3.TxPool {
         let request = JSONRPCRequestFabric.prepareRequest(.getTxPoolStatus, parameters: [])
         let rp = web3.dispatch(request)
         let queue = web3.requestDispatcher.queue
-        return rp.map(on: queue) { response in
-            guard let value: TxPoolStatus = response.result as? TxPoolStatus else {
+        return rp.map(on: queue ) { response in
+            guard let value: TxPoolStatus = response.getValue() else {
                 if response.error != nil {
                     throw Web3Error.nodeError(desc: response.error!.message)
                 }

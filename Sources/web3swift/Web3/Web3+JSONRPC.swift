@@ -56,7 +56,7 @@ public struct JSONRPCrequest: Encodable {
 
 /// JSON RPC batch request structure for serialization and deserialization purposes.
 public struct JSONRPCrequestBatch: Encodable {
-    var requests: [JSONRPCrequest]
+    public var requests: [JSONRPCrequest]
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -68,7 +68,7 @@ public struct JSONRPCrequestBatch: Encodable {
 public struct JSONRPCresponse: Decodable{
     public var id: Int
     public var jsonrpc = "2.0"
-    public var result: Any?
+    public var result: Result
     public var error: ErrorMessage?
     public var message: String?
 
@@ -78,17 +78,134 @@ public struct JSONRPCresponse: Decodable{
         case result = "result"
         case error = "error"
     }
-
-    public init(id: Int, jsonrpc: String, result: Any?, error: ErrorMessage?) {
+    
+    public init(id: Int, jsonrpc: String, result: Result, error: ErrorMessage?) {
         self.id = id
         self.jsonrpc = jsonrpc
         self.result = result
         self.error = error
     }
+    
+    public struct Result: Decodable {
+        private let value: Any?
+        
+        public init(value: Any?) {
+            self.value = value
+        }
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            var value: Any? = nil
+            if let rawValue = try? container.decode(String.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(Int.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(Bool.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(EventLog.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(Block.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(TransactionReceipt.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(TransactionDetails.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([EventLog].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([Block].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([TransactionReceipt].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([TransactionDetails].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(TxPoolStatus.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(TxPoolContent.self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([Bool].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([Int].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([String].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([String: String].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([String: Int].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([String:[String:[String:String]]].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode([String:[String:[String:[String:String?]]]].self) {
+                value = rawValue
+            } else if let rawValue = try? container.decode(FilterChanges.self) {
+                value = rawValue
+            }
+            self.value = value
+        }
+        
+        public func getValue<T>() -> T? {
+            let slf = T.self
+            if slf == BigUInt.self {
+                guard let string = self.value as? String else {return nil}
+                guard let value = BigUInt(string.stripHexPrefix(), radix: 16) else {return nil}
+                return value as? T
+            } else if slf == BigInt.self {
+                guard let string = self.value as? String else {return nil}
+                guard let value = BigInt(string.stripHexPrefix(), radix: 16) else {return nil}
+                return value as? T
+            } else if slf == Data.self {
+                guard let string = self.value as? String else {return nil}
+                guard let value = Data.fromHex(string) else {return nil}
+                return value as? T
+            } else if slf == EthereumAddress.self {
+                guard let string = self.value as? String else {return nil}
+                guard let value = EthereumAddress(string, ignoreChecksum: true) else {return nil}
+                return value as? T
+            }
+    //        else if slf == String.self {
+    //            guard let value = self.result as? T else {return nil}
+    //            return value
+    //        } else if slf == Int.self {
+    //            guard let value = self.result as? T else {return nil}
+    //            return value
+    //        }
+            else if slf == [BigUInt].self {
+                guard let string = self.value as? [String] else {return nil}
+                let values = string.compactMap { (str) -> BigUInt? in
+                    return BigUInt(str.stripHexPrefix(), radix: 16)
+                }
+                return values as? T
+            } else if slf == [BigInt].self {
+                guard let string = self.value as? [String] else {return nil}
+                let values = string.compactMap { (str) -> BigInt? in
+                    return BigInt(str.stripHexPrefix(), radix: 16)
+                }
+                return values as? T
+            } else if slf == [Data].self {
+                guard let string = self.value as? [String] else {return nil}
+                let values = string.compactMap { (str) -> Data? in
+                    return Data.fromHex(str)
+                }
+                return values as? T
+            } else if slf == [EthereumAddress].self {
+                guard let string = self.value as? [String] else {return nil}
+                let values = string.compactMap { (str) -> EthereumAddress? in
+                    return EthereumAddress(str, ignoreChecksum: true)
+                }
+                return values as? T
+            }
+            guard let value = self.value as? T  else {return nil}
+            return value
+        }
+    }
 
     public struct ErrorMessage: Decodable {
         public var code: Int
         public var message: String
+        
+        public init(code: Int, message: String) {
+            self.code = code
+            self.message = message
+        }
     }
 
     internal var decodableTypes: [Decodable.Type] = [
@@ -119,54 +236,10 @@ public struct JSONRPCresponse: Decodable{
         let jsonrpc: String = try container.decode(String.self, forKey: .jsonrpc)
         let errorMessage = try container.decodeIfPresent(ErrorMessage.self, forKey: .error)
         if errorMessage != nil {
-            self.init(id: id, jsonrpc: jsonrpc, result: nil, error: errorMessage)
+            self.init(id: id, jsonrpc: jsonrpc, result: Result(value: nil), error: errorMessage)
             return
         }
-        // TODO: refactor me
-        var result: Any? = nil
-        if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(Int.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(Bool.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(EventLog.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(Block.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(TransactionReceipt.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(TransactionDetails.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([EventLog].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([Block].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([TransactionReceipt].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([TransactionDetails].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(TxPoolStatus.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(TxPoolContent.self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([Bool].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([Int].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String: String].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String: Int].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: String]]].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: [String: String?]]]].self, forKey: .result) {
-            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent(Web3.Oracle.FeeHistory.self, forKey: .result) {
-            result = rawValue
-        }
+        let result = try container.decode(Result.self, forKey: .result)
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
 
@@ -175,65 +248,17 @@ public struct JSONRPCresponse: Decodable{
     ///
     /// Returns nil if serialization fails
     public func getValue<T>() -> T? {
-        let type = T.self
-
-        if type == BigUInt.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = BigUInt(string.stripHexPrefix(), radix: 16) else {return nil}
-            return value as? T
-        } else if type == BigInt.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = BigInt(string.stripHexPrefix(), radix: 16) else {return nil}
-            return value as? T
-        } else if type == Data.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = Data.fromHex(string) else {return nil}
-            return value as? T
-        } else if type == EthereumAddress.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = EthereumAddress(string, ignoreChecksum: true) else {return nil}
-            return value as? T
-        }
-//        else if slf == String.self {
-//            guard let value = self.result as? T else {return nil}
-//            return value
-//        } else if slf == Int.self {
-//            guard let value = self.result as? T else {return nil}
-//            return value
-//        }
-        else if type == [BigUInt].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> BigUInt? in
-                return BigUInt(str.stripHexPrefix(), radix: 16)
-            }
-            return values as? T
-        } else if type == [BigInt].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> BigInt? in
-                return BigInt(str.stripHexPrefix(), radix: 16)
-            }
-            return values as? T
-        } else if type == [Data].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> Data? in
-                return Data.fromHex(str)
-            }
-            return values as? T
-        } else if type == [EthereumAddress].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> EthereumAddress? in
-                return EthereumAddress(str, ignoreChecksum: true)
-            }
-            return values as? T
-        }
-        guard let value = self.result as? T  else {return nil}
-        return value
+        result.getValue()
     }
 }
 
 /// JSON RPC batch response structure for serialization and deserialization purposes.
 public struct JSONRPCresponseBatch: Decodable {
     var responses: [JSONRPCresponse]
+    
+    public init(responses: [JSONRPCresponse]) {
+        self.responses = responses
+    }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -292,7 +317,7 @@ public struct JSONRPCparams: Encodable{
                 try container.encode(p)
             } else if let p = par as? EventFilterParameters {
                 try container.encode(p)
-            } else if let p = par as? [Double] {
+            } else if let p = par as? SubscribeOnLogsParams {
                 try container.encode(p)
             }
         }

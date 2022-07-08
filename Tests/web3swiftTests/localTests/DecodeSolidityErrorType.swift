@@ -1,5 +1,5 @@
 //
-//  web3swiftDecodeSolidityErrorType.swift
+//  DecodeSolidityErrorType.swift
 //  Tests
 //
 //  Created by JeneaVranceanu on 25/01/2022.
