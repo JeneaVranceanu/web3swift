@@ -92,16 +92,16 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             }
         }
     }
-    
+
     public func sendAsync(_ requests: JSONRPCrequestBatch, queue: DispatchQueue) -> Promise<JSONRPCresponseBatch> {
         when(fulfilled: requests.requests.map { sendAsync($0, queue: queue) }).map { responses in
             JSONRPCresponseBatch(responses: responses)
         }
     }
-    
+
     public var network: Networks?
     public var url: URL
-    
+
     public var socket: WebSocket
     public var delegate: Web3SocketDelegate
     /// A flag that is true if socket connected or false if socket doesn't connected.
@@ -119,7 +119,7 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
     /// This flag will allow to differentiate connection and reconnection events.
     /// In case of reconnection event all subscriptions must be re-initialized.
     private var isReconnectingOnPeerClosed = false
-    
+
     public init?(_ endpoint: URL,
                  delegate wsdelegate: Web3SocketDelegate? = nil,
                  network: Networks) {
@@ -220,11 +220,11 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             }
         }
     }
-    
+
     public func connectSocket() {
         socket.connect()
     }
-    
+
     public func disconnectSocket() {
         socket.disconnect()
     }
@@ -239,11 +239,11 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
             subsription.resubscribe()
         }
     }
-    
+
     public func isConnect() -> Bool {
         return websocketConnected
     }
-    
+
     public class func connectToSocket(_ endpoint: String,
                                       delegate: Web3SocketDelegate? = nil,
                                       network net: Networks) -> WebsocketProvider? {
@@ -255,7 +255,7 @@ public class WebsocketProvider: Web3SubscriptionProvider, WebSocketDelegate {
         socketProvider.connectSocket()
         return socketProvider
     }
-    
+
     public class func connectToSocket(_ endpoint: URL,
                                       delegate: Web3SocketDelegate? = nil,
                                       network net: Networks) -> WebsocketProvider? {

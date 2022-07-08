@@ -1,19 +1,18 @@
-//  web3swift
-//
+//  Package: web3swift
 //  Created by Alex Vlasov.
 //  Copyright © 2018 Alex Vlasov. All rights reserved.
 //
+//  Additions to support new transaction types by Mark Loit March 2022
 
 import Foundation
 import BigInt
-//import EthereumAddress
 
 /// Global counter object to enumerate JSON RPC requests.
 public struct Counter {
     public static var counter = UInt64(1)
     public static var lockQueue = DispatchQueue(label: "counterQueue")
     public static func increment() -> UInt64 {
-        var c:UInt64 = 0
+        var c: UInt64 = 0
         lockQueue.sync {
             c = Counter.counter
             Counter.counter = Counter.counter + 1
@@ -28,14 +27,14 @@ public struct JSONRPCrequest: Encodable {
     public var method: JSONRPCmethod?
     public var params: JSONRPCparams?
     public var id: UInt64 = Counter.increment()
-    
+
     enum CodingKeys: String, CodingKey {
         case jsonrpc
         case method
         case params
         case id
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(jsonrpc, forKey: .jsonrpc)
@@ -43,7 +42,7 @@ public struct JSONRPCrequest: Encodable {
         try container.encode(params, forKey: .params)
         try container.encode(id, forKey: .id)
     }
-    
+
     public var isValid: Bool {
         get {
             if self.method == nil {
@@ -58,7 +57,7 @@ public struct JSONRPCrequest: Encodable {
 /// JSON RPC batch request structure for serialization and deserialization purposes.
 public struct JSONRPCrequestBatch: Encodable {
     public var requests: [JSONRPCrequest]
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.requests)
@@ -72,7 +71,7 @@ public struct JSONRPCresponse: Decodable{
     public var result: Result
     public var error: ErrorMessage?
     public var message: String?
-    
+
     enum JSONRPCresponseKeys: String, CodingKey {
         case id = "id"
         case jsonrpc = "jsonrpc"
@@ -198,7 +197,7 @@ public struct JSONRPCresponse: Decodable{
             return value
         }
     }
-    
+
     public struct ErrorMessage: Decodable {
         public var code: Int
         public var message: String
@@ -208,25 +207,29 @@ public struct JSONRPCresponse: Decodable{
             self.message = message
         }
     }
-    
-    internal var decodableTypes: [Decodable.Type] = [[EventLog].self,
-                                  [TransactionDetails].self,
-                                  [TransactionReceipt].self,
-                                  [Block].self,
-                                  [String].self,
-                                  [Int].self,
-                                  [Bool].self,
-                                  EventLog.self,
-                                  TransactionDetails.self,
-                                  TransactionReceipt.self,
-                                  Block.self,
-                                  String.self,
-                                  Int.self,
-                                  Bool.self,
-                                  [String:String].self,
-                                  [String:Int].self,
-                                  [String:[String:[String:[String]]]].self]
-    
+
+    internal var decodableTypes: [Decodable.Type] = [
+        [EventLog].self,
+        [TransactionDetails].self,
+        [TransactionReceipt].self,
+        [Block].self,
+        [String].self,
+        [Int].self,
+        [Bool].self,
+        EventLog.self,
+        TransactionDetails.self,
+        TransactionReceipt.self,
+        Block.self,
+        String.self,
+        Int.self,
+        Bool.self,
+        [String: String].self,
+        [String: Int].self,
+        [String: [String: [String: [String]]]].self,
+        Web3.Oracle.FeeHistory.self
+    ]
+
+    // FIXME: Make me a real generic
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: JSONRPCresponseKeys.self)
         let id: Int = try container.decode(Int.self, forKey: .id)
@@ -239,7 +242,8 @@ public struct JSONRPCresponse: Decodable{
         let result = try container.decode(Result.self, forKey: .result)
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
-    
+
+    // FIXME: Make me a real generic
     /// Get the JSON RCP reponse value by deserializing it into some native <T> class.
     ///
     /// Returns nil if serialization fails
@@ -255,7 +259,7 @@ public struct JSONRPCresponseBatch: Decodable {
     public init(responses: [JSONRPCresponse]) {
         self.responses = responses
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let responses = try container.decode([JSONRPCresponse].self)
@@ -265,14 +269,25 @@ public struct JSONRPCresponseBatch: Decodable {
 
 /// Transaction parameters JSON structure for interaction with Ethereum node.
 public struct TransactionParameters: Codable {
+    /// accessList parameter JSON structure
+    public struct AccessListEntry: Codable {
+        public var address: String
+        public var storageKeys: [String]
+    }
+
+    public var type: String?  // must be set for new EIP-2718 transaction types
+    public var chainID: String?
     public var data: String?
     public var from: String?
     public var gas: String?
-    public var gasPrice: String?
+    public var gasPrice: String? // Legacy & EIP-2930
+    public var maxFeePerGas: String? // EIP-1559
+    public var maxPriorityFeePerGas: String? // EIP-1559
+    public var accessList: [AccessListEntry]? // EIP-1559 & EIP-2930
     public var to: String?
     public var value: String? = "0x0"
-    
-    public init(from _from:String?, to _to:String?) {
+
+    public init(from _from: String?, to _to: String?) {
         from = _from
         to = _to
     }
@@ -288,8 +303,9 @@ public struct EventFilterParameters: Codable {
 
 /// Raw JSON RCP 2.0 internal flattening wrapper.
 public struct JSONRPCparams: Encodable{
+    // TODO: Rewrite me to generic
     public var params = [Any]()
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         for par in params {

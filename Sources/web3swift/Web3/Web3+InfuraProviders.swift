@@ -10,7 +10,7 @@ import Starscream
 public final class InfuraProvider: Web3HttpProvider {
     public init?(_ net:Networks, accessToken token: String? = nil) {
         var requestURLstring = "https://" + net.name + Constants.infuraHttpScheme
-        requestURLstring += token != nil ? token! : Constants.infuraToken
+        requestURLstring += token ?? Constants.infuraToken
         let providerURL = URL(string: requestURLstring)
         super.init(providerURL!, network: net)
     }
@@ -18,6 +18,7 @@ public final class InfuraProvider: Web3HttpProvider {
 
 /// Custom Websocket provider of Infura nodes.
 public final class InfuraWebsocketProvider: WebsocketProvider {
+
     public init?(_ network: Networks,
                  delegate: Web3SocketDelegate? = nil,
                  projectId: String? = nil) {
@@ -31,7 +32,7 @@ public final class InfuraWebsocketProvider: WebsocketProvider {
         guard let url = URL(string: urlString) else {return nil}
         super.init(url, delegate: delegate, network: network)
     }
-    
+
     public init?(_ endpoint: String,
                  delegate: Web3SocketDelegate? = nil,
                  projectId: String? = nil) {
@@ -91,7 +92,7 @@ public final class InfuraWebsocketProvider: WebsocketProvider {
         socketProvider.connectSocket()
         return socketProvider
     }
-    
+
     public static func connectToInfuraSocket(_ network: Networks,
                                              delegate: Web3SocketDelegate,
                                              projectId: String? = nil) -> InfuraWebsocketProvider? {
