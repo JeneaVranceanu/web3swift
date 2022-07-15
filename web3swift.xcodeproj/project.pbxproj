@@ -81,7 +81,7 @@
 		3AA815B82276E44100F5DB52 /* EthereumKeystoreV3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA815372276E44100F5DB52 /* EthereumKeystoreV3.swift */; };
 		3AA815BA2276E44100F5DB52 /* PlainKeystore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA815392276E44100F5DB52 /* PlainKeystore.swift */; };
 		3AA815BB2276E44100F5DB52 /* AbstractKeystore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8153A2276E44100F5DB52 /* AbstractKeystore.swift */; };
-		3AA815BD2276E44100F5DB52 /* BloomFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8153D2276E44100F5DB52 /* BloomFilter.swift */; };
+		3AA815BD2276E44100F5DB52 /* EthereumBloomFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8153D2276E44100F5DB52 /* EthereumBloomFilter.swift */; };
 		3AA815BF2276E44100F5DB52 /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8153F2276E44100F5DB52 /* EthereumTransaction.swift */; };
 		3AA815C02276E44100F5DB52 /* Web3+Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA815412276E44100F5DB52 /* Web3+Wallet.swift */; };
 		3AA815C12276E44100F5DB52 /* Web3+BrowserFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA815422276E44100F5DB52 /* Web3+BrowserFunctions.swift */; };
@@ -308,7 +308,7 @@
 		3AA815372276E44100F5DB52 /* EthereumKeystoreV3.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKeystoreV3.swift; sourceTree = "<group>"; };
 		3AA815392276E44100F5DB52 /* PlainKeystore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlainKeystore.swift; sourceTree = "<group>"; };
 		3AA8153A2276E44100F5DB52 /* AbstractKeystore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbstractKeystore.swift; sourceTree = "<group>"; };
-		3AA8153D2276E44100F5DB52 /* BloomFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BloomFilter.swift; sourceTree = "<group>"; };
+		3AA8153D2276E44100F5DB52 /* EthereumBloomFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBloomFilter.swift; sourceTree = "<group>"; };
 		3AA8153F2276E44100F5DB52 /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
 		3AA815412276E44100F5DB52 /* Web3+Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Web3+Wallet.swift"; sourceTree = "<group>"; };
 		3AA815422276E44100F5DB52 /* Web3+BrowserFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Web3+BrowserFunctions.swift"; sourceTree = "<group>"; };
@@ -724,7 +724,7 @@
 				6049F40C280616FC00DFE624 /* EnvelopeFactory.swift */,
 				6049F40D280616FC00DFE624 /* EthereumParameters.swift */,
 				6049F40F280616FC00DFE624 /* LegacyEnvelope.swift */,
-				3AA8153D2276E44100F5DB52 /* BloomFilter.swift */,
+				3AA8153D2276E44100F5DB52 /* EthereumBloomFilter.swift */,
 				3AA8153F2276E44100F5DB52 /* EthereumTransaction.swift */,
 				60C1786D2809BA0C0083F064 /* EthereumMetadata.swift */,
 			);
@@ -1344,7 +1344,7 @@
 				3AA815C32276E44100F5DB52 /* ABIElements.swift in Sources */,
 				3AA815B72276E44100F5DB52 /* BIP32Keystore.swift in Sources */,
 				3AA815FD2276E44100F5DB52 /* Promise+Web3+Eth+Call.swift in Sources */,
-				3AA815BD2276E44100F5DB52 /* BloomFilter.swift in Sources */,
+				3AA815BD2276E44100F5DB52 /* EthereumBloomFilter.swift in Sources */,
 				3AA815F62276E44100F5DB52 /* Promise+Web3+Eth+SendRawTransaction.swift in Sources */,
 				3AA815FF2276E44100F5DB52 /* Web3+ERC721x.swift in Sources */,
 				3AA815E52276E44100F5DB52 /* NativeTypesEncoding+Extensions.swift in Sources */,

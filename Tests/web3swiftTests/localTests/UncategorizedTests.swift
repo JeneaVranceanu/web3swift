@@ -83,6 +83,18 @@ class UncategorizedTests: LocalTestCase {
         }
     }
 
+    func testBloomFilterPerformance() throws {
+        var uuids = [Data]()
+        for _ in 0..<4000 {
+            uuids.append(UUID().uuidString.data(using: .utf8)!)
+        }
+        measure {
+            for bytes in uuids {
+                let _ = EthereumBloomFilter.bloom9(bytes)
+            }
+        }
+    }
+
     func testMakePrivateKey() throws {
         let privKey = SECP256K1.generatePrivateKey()
         XCTAssert(privKey != nil, "Failed to create new private key")

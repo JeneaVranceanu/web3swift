@@ -20,7 +20,8 @@
     {
       "parallelizable" : true,
       "skippedTests" : [
-        "LocalTestCase"
+        "LocalTestCase",
+        "UncategorizedTests\/testBloomFilterPerformance()"
       ],
       "target" : {
         "containerPath" : "container:web3swift.xcodeproj",
