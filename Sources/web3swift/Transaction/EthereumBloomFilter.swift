@@ -47,9 +47,11 @@ extension EthereumBloomFilter {
     }
 
     /// Calculates Bloom filter from Keccak-256 calculated from given `data`.
-    /// - Parameter data: some data to calculate filter from.
+    /// - Parameter data: some data to calculate filter from, e.g. event's topic or address of a smart contract.
     /// - Returns: Bloom filter.
     static func bloom9(_ data: Data) -> BigUInt {
+        // TODO: update to match this implementation https://manbytesgnu.com/eth-log-bloom.html
+        // TODO: it will increase performance.
         let b = data.sha3(.keccak256)
         var result = BigUInt(1) <<
             ((BigUInt(b[1]) + (BigUInt(b[0]) << 8)) & EthereumBloomFilter.mask)
