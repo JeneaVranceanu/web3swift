@@ -46,12 +46,17 @@ public class EthereumContract: ContractProtocol {
         var events = [String: ABI.Element.Event]()
         for case let .event(event) in abi {
             events[event.name] = event
+            if !event.anonymous {
+                events[event.topic.toHexString().addHexPrefix()] = event
+            }
         }
         return events
     }()
 
     private(set) public lazy var allEvents: [ABI.Element.Event] = {
-        return Array(events.values)
+        return Array(events.filter({ (key: String, _) in
+            Data.fromHex(key) == nil
+        }).values)
     }()
 
     private(set) public lazy var constructor: ABI.Element.Constructor = {

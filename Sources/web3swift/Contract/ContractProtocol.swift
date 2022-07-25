@@ -23,13 +23,13 @@ public protocol ContractProtocol {
     /// name with input parameters `getData(bytes32)` and 4 bytes signature `0xffffffff` (expected to be lowercased).
     /// The mapping by name (e.g. `getData`) is the one most likely expected to return arrays with
     /// more than one entry due to the fact that solidity allows method overloading.
-    var methods: [String:[ABI.Element.Function]] {get}
+    var methods: [String: [ABI.Element.Function]] {get}
 
     /// All entries from `methods`.
     var allMethods: [ABI.Element.Function] {get}
 
-    /// Events filtered from `abi`.
-    var events: [String:ABI.Element.Event] {get}
+    /// Events filtered from `abi` and mapped to event name and topic. Events are mapped to topics only if events are not anonymous.
+    var events: [String: ABI.Element.Event] {get}
 
     /// All events from `events`.
     var allEvents: [ABI.Element.Event] {get}
