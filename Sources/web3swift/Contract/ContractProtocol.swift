@@ -29,6 +29,8 @@ public protocol ContractProtocol {
     var allMethods: [ABI.Element.Function] {get}
 
     /// Events filtered from `abi` and mapped to event name and topic. Events are mapped to topics only if events are not anonymous.
+    /// As a topic used a hash of event name with input arguments like `ValueReceived(uint256)`.
+    /// This hash is 32 bytes, lowercased with `0x` prefix.
     var events: [String: ABI.Element.Event] {get}
 
     /// All events from `events`.
