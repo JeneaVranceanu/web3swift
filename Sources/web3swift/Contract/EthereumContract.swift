@@ -148,26 +148,19 @@ public class EthereumContract: ContractProtocol {
     }
 
     public func parseEvent(_ eventLog: EventLog) -> (eventName: String?, eventData: [String: Any]?) {
-        for (eName, ev) in self.events {
-            if (!ev.anonymous) {
-                if eventLog.topics[0] != ev.topic {
-                    continue
-                }
-                else {
-                    let logTopics = eventLog.topics
-                    let logData = eventLog.data
-                    let parsed = ev.decodeReturnedLogs(eventLogTopics: logTopics, eventLogData: logData)
-                    if parsed != nil {
-                        return (eName, parsed!)
-                    }
-                }
-            } else {
-                let logTopics = eventLog.topics
-                let logData = eventLog.data
-                let parsed = ev.decodeReturnedLogs(eventLogTopics: logTopics, eventLogData: logData)
-                if parsed != nil {
-                    return (eName, parsed!)
-                }
+        func parseEventData(event: ABI.Element.Event) -> [String: Any]? {
+            event.decodeReturnedLogs(eventLogTopics: eventLog.topics, eventLogData: eventLog.data)
+        }
+
+        if let topic = eventLog.topics.first?.toHexString(),
+           let event = events[topic],
+           let eventData = parseEventData(event: event) {
+            return (event.name, eventData)
+        }
+
+        for event in allEvents {
+            if let eventData = parseEventData(event: event) {
+                return (event.name, eventData)
             }
         }
         return (nil, nil)
