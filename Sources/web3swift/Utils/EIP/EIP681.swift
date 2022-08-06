@@ -21,10 +21,18 @@ extension Web3 {
 //    number                  = [ "-" / "+" ] *DIGIT [ "." 1*DIGIT ] [ ( "e" / "E" ) [ 1*DIGIT ] [ "+" UNIT ]
 
     public struct EIP681Code {
+
         public struct EIP681Parameter {
+
             public var type: ABI.Element.ParameterType
-            public var value: AnyObject
+            public var value: Any
+
+            public init(type: ABI.Element.ParameterType, value: Any) {
+                self.type = type
+                self.value = value
+            }
         }
+
         public var isPayRequest: Bool
         public var targetAddress: TargetAddress
         public var chainID: BigUInt?
@@ -36,8 +44,10 @@ extension Web3 {
         public var function: ABI.Element.Function?
 
         public enum TargetAddress {
+
             case ethereumAddress(EthereumAddress)
             case ensAddress(String)
+
             public init(_ string: String) {
                 if let ethereumAddress = EthereumAddress(string) {
                     self = TargetAddress.ethereumAddress(ethereumAddress)
@@ -50,6 +60,19 @@ extension Web3 {
         public init(_ targetAddress: TargetAddress, isPayRequest: Bool = false) {
             self.isPayRequest = isPayRequest
             self.targetAddress = targetAddress
+        }
+
+        public func makeEIP681Link() -> String? {
+            switch targetAddress {
+            case .ethereumAddress(let ethereumAddress):
+                guard let chainID = chainID,
+                      let functionName = functionName,
+                      let keys = parameters.first?.value,
+                      let values = parameters.last?.value else { return nil }
+                return "ethereum:\(ethereumAddress.address)@\(chainID)/\(functionName)?bytes32[]=\(keys)&bytes[]=\(values)"
+            case .ensAddress:
+                return nil
+            }
         }
     }
 
