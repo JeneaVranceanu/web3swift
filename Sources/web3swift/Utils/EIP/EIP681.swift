@@ -25,7 +25,7 @@ extension Web3 {
         public struct EIP681Parameter {
 
             public var type: ABI.Element.ParameterType
-            public var value: Any
+            public var value: AnyObject
 
             public init(type: ABI.Element.ParameterType, value: Any) {
                 self.type = type
