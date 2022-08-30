@@ -74,8 +74,9 @@ extension Web3 {
             if let functionName = functionName, !functionName.isEmpty {
                 link = "\(link)/\(functionName)"
             }
+            var queryParameters = [String]()
             if !parameters.isEmpty {
-                let queryParameters: [String] = parameters.compactMap { eip681Parameter in
+                let mappedParameters: [String] = parameters.compactMap { eip681Parameter in
                     guard let queryValue = Web3
                         .EIP681CodeEncoder
                         .encodeFunctionArgument(eip681Parameter.type, eip681Parameter.value)
@@ -85,10 +86,30 @@ extension Web3 {
                     return "\(eip681Parameter.type.abiRepresentation)=\(queryValue)"
                 }
 
-                if queryParameters.count == parameters.count {
-                    link = "\(link)?\(queryParameters.joined(separator: "&"))"
+                if mappedParameters.count == parameters.count {
+                    queryParameters.append(contentsOf: mappedParameters)
+                } else {
+                    NSLog("Failed to map all provided parameters of type `EIP681Parameter`.\nSuccessuflly mapped parameters are: \(mappedParameters.joined(separator: "\n"))")
+                    return nil
                 }
             }
+
+            if let gasLimit = gasLimit {
+                queryParameters.append("gasLimit=\(gasLimit.description)")
+            }
+
+            if let gasPrice = gasPrice {
+                queryParameters.append("gasPrice=\(gasPrice.description)")
+            }
+
+            if let amount = amount {
+                queryParameters.append("value=\(amount.description)")
+            }
+
+            if !queryParameters.isEmpty {
+                link = "\(link)?\(queryParameters.joined(separator: "&"))"
+            }
+
             return urlEncode ? link.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) : link
         }
     }
@@ -344,11 +365,20 @@ extension Web3 {
             }
 
             if code.functionName != nil {
+                /// The number of input values must be exactly the same as the number of query items.
+                /// If at least one is off - it was declared/encoded incorrectly.
+                if inputs.count != queryItems.count {
+                    return nil
+                }
+
                 let functionEncoding = ABI.Element.Function(name: code.functionName!, inputs: inputs, outputs: [ABI.Element.InOut](), constant: false, payable: code.amount != nil)
                 code.function = functionEncoding
             }
 
+            #if DEBUG
             print(code)
+            #endif
+
             return code
         }
 

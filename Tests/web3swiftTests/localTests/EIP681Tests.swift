@@ -312,4 +312,74 @@ class EIP681Tests: LocalTestCase {
         XCTAssertNotNil(encodedOutputLink)
         XCTAssertNotNil(URL(string: encodedOutputLink ?? ""))
     }
+
+    func testEIP681ParsingArraysWithWhitespacesIn() throws {
+        /// This link is constructed in a way that it holds whitespace characters in query parameters in places where
+        /// no such characters should be placed. But it must be decoded correctly.
+        let rawLink = "ethereum:0xAfbd9b509d98a69F8de31932c97CD35bb809CC50@2828/setData?bytes32[]=[0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47 , 0x4b80742de2bf82acb3630000ba99930e9e0bfd77cdc70f9b9656cecc2869e31a  ,      0x4b80742de2bf82acb363000090c650d2c6c5b796c6342118867cbf91f51d8135 , 0xdf30dba06db6a30e65354d9a64c609861f089545ca58c6b4dbe31a5f338cb0e3  ,    0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000000 , 0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000001     , 0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000002 , 0x4b80742de2bf82acb3630000254bfe7e25184f72df435b5a9da39db6089dcaf5 , 0x5ef83ad9559033e6e941db7d7c495acdce616347d28e90c7ce47cbfcfcad3bc5]&bytes[]=[0x90c650d2c6c5b796c6342118867cbf91f51d8135 , 0x0000000000000000000000000000000000000000000000000000000000003fbf , 0x0000000000000000000000000000000000000000000000000000000000000008 , 0x0000000000000000000000000000000000000000000000000000000000000003 , 0xba99930e9e0bfd77cdc70f9b9656cecc2869e31a , 0x90c650d2c6c5b796c6342118867cbf91f51d8135 , 0x254bfe7e25184f72df435b5a9da39db6089dcaf5 , 0x0000000000000000000000000000000000000000000000000000000000003fbf , 0x6f357c6a0f079fb3a680e3b3ef2f154772df5f6d345bc052ad733a69bba326f363b6cc30697066733a2f2f516d5042485a4c45686d624c57594e374575505a334b437a735663595a53797544596a59506a7a523342706b6934]"
+        let eip681Code = Web3.EIP681CodeParser.parse(rawLink)
+        XCTAssert(eip681Code != nil)
+        guard let eip681Code = eip681Code else { return }
+
+        let keys = eip681Code.parameters[0].value as? [Data]
+        let values = eip681Code.parameters[1].value as? [Data]
+        XCTAssertNotNil(keys)
+        XCTAssertNotNil(values)
+
+        guard let keys = keys,
+              let values = values else { return }
+
+        XCTAssertEqual(keys[0].toHexString().addHexPrefix(),"0x0cfc51aec37c55a4d0b1a65c6255c4bf2fbdf6277f3cc0730c45b828b6db8b47")
+        XCTAssertEqual(keys[1].toHexString().addHexPrefix(),"0x4b80742de2bf82acb3630000ba99930e9e0bfd77cdc70f9b9656cecc2869e31a")
+        XCTAssertEqual(keys[2].toHexString().addHexPrefix(),"0x4b80742de2bf82acb363000090c650d2c6c5b796c6342118867cbf91f51d8135")
+        XCTAssertEqual(keys[3].toHexString().addHexPrefix(),"0xdf30dba06db6a30e65354d9a64c609861f089545ca58c6b4dbe31a5f338cb0e3")
+        XCTAssertEqual(keys[4].toHexString().addHexPrefix(), "0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000000")
+        XCTAssertEqual(keys[5].toHexString().addHexPrefix(), "0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000001")
+        XCTAssertEqual(keys[6].toHexString().addHexPrefix(), "0xdf30dba06db6a30e65354d9a64c6098600000000000000000000000000000002")
+        XCTAssertEqual(keys[7].toHexString().addHexPrefix(), "0x4b80742de2bf82acb3630000254bfe7e25184f72df435b5a9da39db6089dcaf5")
+        XCTAssertEqual(keys[8].toHexString().addHexPrefix(), "0x5ef83ad9559033e6e941db7d7c495acdce616347d28e90c7ce47cbfcfcad3bc5")
+
+        XCTAssertEqual(values[0].toHexString().addHexPrefix(), "0x90c650d2c6c5b796c6342118867cbf91f51d8135")
+        XCTAssertEqual(values[1].toHexString().addHexPrefix(), "0x0000000000000000000000000000000000000000000000000000000000003fbf")
+        XCTAssertEqual(values[2].toHexString().addHexPrefix(), "0x0000000000000000000000000000000000000000000000000000000000000008")
+        XCTAssertEqual(values[3].toHexString().addHexPrefix(), "0x0000000000000000000000000000000000000000000000000000000000000003")
+        XCTAssertEqual(values[4].toHexString().addHexPrefix(), "0xba99930e9e0bfd77cdc70f9b9656cecc2869e31a")
+        XCTAssertEqual(values[5].toHexString().addHexPrefix(), "0x90c650d2c6c5b796c6342118867cbf91f51d8135")
+        XCTAssertEqual(values[6].toHexString().addHexPrefix(), "0x254bfe7e25184f72df435b5a9da39db6089dcaf5")
+        XCTAssertEqual(values[7].toHexString().addHexPrefix(), "0x0000000000000000000000000000000000000000000000000000000000003fbf")
+        XCTAssertEqual(values[8].toHexString().addHexPrefix(), "0x6f357c6a0f079fb3a680e3b3ef2f154772df5f6d345bc052ad733a69bba326f363b6cc30697066733a2f2f516d5042485a4c45686d624c57594e374575505a334b437a735663595a53797544596a59506a7a523342706b6934")
+    }
+
+    /// Query string has a variable of type `int256[3]` that expects 3 elements set as value but instead it gets 4.
+    /// Parsing must fail for the following reasons:
+    ///  - we assume that function in the link expects a certian set of arguments of certain types without which calling it woulf fail;
+    ///  - if arguments of expected types are provided but values for them are invalid - function call will fail as well;
+    ///  - if parsing of at least one argument has failed - function call will fail as well;
+    /// If we are parsing EIP681 that has a function call encoded in it the link must be completely valid.
+    /// It's not possible to guarantee the expected behaviour during execution of this transaction call if at least on of the query
+    /// key-value pairs is invalid.
+    func testWrongArraySize() throws {
+        let wrongEip681Link = "ethereum:0x9aBbDB06A61cC686BD635484439549D45c2449cc@2828/functionName123?int256[3]=[1,2,2,3]"
+        let eip681Code = Web3.EIP681CodeParser.parse(wrongEip681Link)
+        XCTAssertNil(eip681Code)
+    }
+
+    func testEncodingValueGasLimitAndPrice() throws {
+        let rawCode = "ethereum:0x5ffc014343cd971b7eb70732021e26c35b744cc4?value=77445123&gasLimit=1234&gasPrice=789456"
+        let eip681Code = Web3.EIP681CodeParser.parse(rawCode)
+        XCTAssertNotNil(eip681Code)
+        guard let eip681Code = eip681Code else { return }
+        let encodedEip681Link = eip681Code.makeEIP681Link()
+        XCTAssertNotNil(encodedEip681Link)
+        guard let encodedEip681Link = encodedEip681Link,
+              let components = URLComponents(string: encodedEip681Link),
+              let queryItems = components.queryItems else {
+            XCTFail("Failed to parse query items from encoded URL: \(String(describing: encodedEip681Link))")
+            return
+        }
+        let mappedQueryItems = queryItems.map { "\($0.name)=\($0.value ?? "-")" }
+        XCTAssertTrue(mappedQueryItems.contains("gasPrice=789456"))
+        XCTAssertTrue(mappedQueryItems.contains("value=77445123"))
+        XCTAssertTrue(mappedQueryItems.contains("gasLimit=1234"))
+    }
 }
