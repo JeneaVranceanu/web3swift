@@ -364,9 +364,9 @@ class EIP681Tests: LocalTestCase {
         XCTAssertNil(eip681Code)
     }
 
-    func testEncodingValueGasLimitAndPrice() async throws {
+    func testEncodingValueGasLimitAndPrice() throws {
         let rawCode = "ethereum:0x5ffc014343cd971b7eb70732021e26c35b744cc4?value=77445123&gasLimit=1234&gasPrice=789456"
-        let eip681Code = await Web3.EIP681CodeParser.parse(rawCode)
+        let eip681Code = Web3.EIP681CodeParser.parse(rawCode)
         XCTAssertNotNil(eip681Code)
         guard let eip681Code = eip681Code else { return }
         let encodedEip681Link = eip681Code.makeEIP681Link()
