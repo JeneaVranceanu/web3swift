@@ -14,7 +14,7 @@ let excludeFiles: String = []
 let package = Package(
     name: "Web3swift",
     platforms: [
-        .macOS(.v10_12), .iOS(.v11)
+        .macOS(.v10_15), .iOS(.v13)
     ],
     products: [
         .library(name: "web3swift", targets: ["web3swift"])
